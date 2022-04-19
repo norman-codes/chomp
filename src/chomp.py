@@ -1,6 +1,7 @@
 # The open-source "appJar" framework (found in the official Python documentation here: https://wiki.python.org/moin/GuiProgramming)
 # is used to generate a GUI simply and easily using Python's native interface toolkit ("TkInter" - https://wiki.python.org/moin/TkInter).
 # "appJar"'s complete documentation, referenced throughout the project, is available here: http://appjar.info/
+from types import NoneType
 from appJar import gui
 # Python has a native library for reading files with the ".json" extension. (https://docs.python.org/3/library/json.html)
 # The dataset used for this project is held within a ".json" file, so it is imported here.
@@ -8,9 +9,8 @@ import json
 # Python has a native library for mathematical operations necessary to calculuate the
 # distance between two latitude/longitude pairs.
 import math
-
+# Python's native "OS" library aids in finding the database file by allowing the script to specify the path.
 import os.path
-import codecs
 
 # DISTANCE CALCULATION:
 # The latitude and longitude coordinate pair of the University of Florida, extracted from Google Maps:
@@ -61,7 +61,6 @@ class Location:
     # "Constructor"
     def __init__(self, _ID, _name, _address, _city, _state, _latitude, _longitude, _stars, _numReviews, _categories):
         # Setting the object's values to the parsed .json's values.
-        
         self.ID = _ID
         self.name = _name
         self.address = _address
@@ -81,27 +80,43 @@ class Location:
         # where X is a *USER-INPUTTED* "closeness factor" (default is 1);
         # if it is increased, then the user is okay with traveling a larger distance
         # and as a result, the chompability of restaurants that are further away from UF will increase.
-
         self.chompability = (1 / self.distanceToUF) + (_numReviews / _stars)
 
     # "rechompify" recalculates the "Chompability" based on a new closeness factor.
     def rechompify(self, closeness):
         self.chompability = (closeness / self.distanceToUF) + (self.numReviews / self.stars)
 
+# ARRAY
+locations = []
+
 # READING THE .json FILE
 # (and creating Location objects with it, to be pushed into an array.)
 # Reference: https://www.geeksforgeeks.org/read-json-file-using-python/
-# Encoding issues were present, and the "codecs" library was necessary to open the .json file properly.
-# Reference for encoding issue fix: https://stackoverflow.com/questions/30598350/unicodedecodeerror-charmap-codec-cant-decode-byte-0x8d-in-position-7240-cha
+# Encoding issues fixed by adding "errors="replace"" into open() function.
 
-types_of_encoding = ["utf8", "cp1252"]
-for encoding_type in types_of_encoding:
-    file1 = codecs.open(os.path.dirname(__file__) + '\\dataset\\yelp_academic_dataset_business.json', encoding=encoding_type, errors='replace')
-    Lines = file1.readlines()
-
-    for line in Lines:
-        test = json.loads(line)
-
+# Opening the dataset file.
+datasetFile = open(os.path.dirname(__file__) + '\\dataset\\yelp_academic_dataset_business.json', errors="replace")
+# Reading every line and putting it into a list.
+lines = datasetFile.readlines()
+# For every line in the file (150,346), load the .json "object" and its variables into a "dictionary" (Reference: https://www.w3schools.com/python/python_dictionaries.asp).
+    # Note that the equivalent structure in C++ is an ordered map (Reference: https://stackoverflow.com/questions/2884068/what-is-the-difference-between-a-map-and-a-dictionary).
+for line in lines:
+    # The JSON object in the current line is parsed.
+    locationJSON = json.loads(line)
+    # Every relevant variable from the JSON may now be used to instantiate a "Location" object.
+    if locationJSON["categories"] != None:
+        # Note that the "categories" of a given location are injected into a comma-separated string.
+        # It must be changed into a list in order for the assignment to be correct using the ".split("delimiter")" function.
+        # Reference: https://www.codespeedy.com/how-to-convert-comma-separated-string-to-list-in-python/
+        # If at least one category exists for a given location, then split it into a list and create the object with it.
+        category_list = locationJSON["categories"].split(", ")
+        currentLocation = Location(locationJSON["business_id"], locationJSON["name"], locationJSON["address"], locationJSON["city"], locationJSON["state"], locationJSON["latitude"], locationJSON["longitude"], locationJSON["stars"], locationJSON["review_count"], category_list)
+    else:
+        # If no categories exist for a given location, then push "none" into the category list and create he object with it.
+        currentLocation = Location(locationJSON["business_id"], locationJSON["name"], locationJSON["address"], locationJSON["city"], locationJSON["state"], locationJSON["latitude"], locationJSON["longitude"], locationJSON["stars"], locationJSON["review_count"], "none")
+    
+    # The "locations" array is appended with the current location object.
+    locations.append(currentLocation)
 
 # QUICKSORT
 # Reference: https://www.geeksforgeeks.org/python-program-for-quicksort/
