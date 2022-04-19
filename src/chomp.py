@@ -1,16 +1,19 @@
 # The open-source "appJar" framework (found in the official Python documentation here: https://wiki.python.org/moin/GuiProgramming)
 # is used to generate a GUI simply and easily using Python's native interface toolkit ("TkInter" - https://wiki.python.org/moin/TkInter).
 # "appJar"'s complete documentation, referenced throughout the project, is available here: http://appjar.info/
-from types import NoneType
 from appJar import gui
 # Python has a native library for reading files with the ".json" extension. (https://docs.python.org/3/library/json.html)
 # The dataset used for this project is held within a ".json" file, so it is imported here.
 import json
-# Python has a native library for mathematical operations necessary to calculuate the
+# Python has a native library for mathematical operations (https://docs.python.org/3/library/math.html); here, it is necessary to calculuate the
 # distance between two latitude/longitude pairs.
 import math
-# Python's native "OS" library aids in finding the database file by allowing the script to specify the path.
+# Python has a native library for operating system-related functionality (https://docs.python.org/3/library/os.html);
+# here, it aids in finding the database file by allowing the script to specify the path to it relative to the user's file system.
 import os.path
+# Python has a native library for time acccess and conversions (https://docs.python.org/3/library/time.html#time.monotonic);
+# here, it allows us to track the time at which a function starts and ends to compare and display the execution speeds of each sorting algorithm.
+import time
 
 # DISTANCE CALCULATION:
 # The latitude and longitude coordinate pair of the University of Florida, extracted from Google Maps:
@@ -121,11 +124,84 @@ for line in lines:
 # QUICKSORT
 # Reference: https://www.geeksforgeeks.org/python-program-for-quicksort/
 
+def partition(location_arr, low, high):
+	i = (low-1)		 # index of smaller element
+	pivot = location_arr[high]	 # pivot
+
+	for j in range(low, high):
+
+		# If current element is smaller than or
+		# equal to pivot
+		if location_arr[j] <= pivot:
+
+			# increment index of smaller element
+			i = i+1
+			location_arr[i], location_arr[j] = location_arr[j], location_arr[i]
+
+	location_arr[i+1], location_arr[high] = location_arr[high], location_arr[i+1]
+	return (i+1)
+
+def quickSort(location_arr, low, high):
+	if len(location_arr) == 1:
+		return location_arr
+	if low < high:
+
+		# pi is partitioning index, arr[p] is now
+		# at right place
+		pi = partition(location_arr, low, high)
+
+		# Separately sort elements before
+		# partition and after partition
+		quickSort(location_arr, low, pi-1)
+		quickSort(location_arr, pi+1, high)
+
+
 # HEAPIFY
 # Reference: https://www.geeksforgeeks.org/python-program-for-heap-sort/
 
+def heapify(location_arr, n, i):
+	largest = i # Initialize largest as root
+	l = 2 * i + 1	 # left = 2*i + 1
+	r = 2 * i + 2	 # right = 2*i + 2
+
+	# See if left child of root exists and is
+	# greater than root
+	if l < n and location_arr[i] < location_arr[l]:
+		largest = l
+
+	# See if right child of root exists and is
+	# greater than root
+	if r < n and location_arr[largest] < location_arr[r]:
+		largest = r
+
+	# Change root, if needed
+	if largest != i:
+		location_arr[i],location_arr[largest] = location_arr[largest],location_arr[i] # swap
+
+		# Heapify the root.
+		heapify(location_arr, n, largest)
+
 # HEAPSORT
 # Reference: https://www.geeksforgeeks.org/python-program-for-heap-sort/
+
+# The main function to sort an array of given size
+def heapSort(location_arr):
+	n = len(location_arr)
+
+	# Build a maxheap.
+	# Since last parent will be at ((n//2)-1) we can start at that location.
+	for i in range(n // 2 - 1, -1, -1):
+		heapify(location_arr, n, i)
+
+	# One by one extract elements
+	for i in range(n-1, 0, -1):
+		location_arr[i], location_arr[0] = location_arr[0], location_arr[i] # swap
+		heapify(location_arr, i, 0)
+
+# Driver code to test sorting
+location_arr = [10, 7, 8, 9, 1, 5]
+quickSort(location_arr, 0, len(location_arr)-1)
+heapSort(location_arr)
 
 # GUI CODE
 # Reference: http://appjar.info/
