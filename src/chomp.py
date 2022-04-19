@@ -106,6 +106,8 @@ for encoding_type in types_of_encoding:
 # QUICKSORT
 # Reference: https://www.geeksforgeeks.org/python-program-for-quicksort/
 
+#commit test
+
 # HEAPIFY
 # Reference: https://www.geeksforgeeks.org/python-program-for-heap-sort/
 
