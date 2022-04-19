@@ -154,11 +154,56 @@ def quickSort(location_arr, low, high):
 
 # Driver code to test above
 location_arr = [10, 7, 8, 9, 1, 5]
-n = len(location_arr)
-quickSort(location_arr, 0, n-1)
+quickSort(location_arr, 0, len(location_arr)-1)
 
 # HEAPIFY
 # Reference: https://www.geeksforgeeks.org/python-program-for-heap-sort/
+
+# To heapify subtree rooted at index i.
+# n is size of heap
+def heapify(location_arr, n, i):
+	largest = i # Initialize largest as root
+	l = 2 * i + 1	 # left = 2*i + 1
+	r = 2 * i + 2	 # right = 2*i + 2
+
+	# See if left child of root exists and is
+	# greater than root
+	if l < n and location_arr[i] < location_arr[l]:
+		largest = l
+
+	# See if right child of root exists and is
+	# greater than root
+	if r < n and location_arr[largest] < location_arr[r]:
+		largest = r
+
+	# Change root, if needed
+	if largest != i:
+		location_arr[i],location_arr[largest] = location_arr[largest],location_arr[i] # swap
+
+		# Heapify the root.
+		heapify(location_arr, n, largest)
+
+# The main function to sort an array of given size
+def heapSort(location_arr):
+	n = len(location_arr)
+
+	# Build a maxheap.
+	# Since last parent will be at ((n//2)-1) we can start at that location.
+	for i in range(n // 2 - 1, -1, -1):
+		heapify(location_arr, n, i)
+
+	# One by one extract elements
+	for i in range(n-1, 0, -1):
+		location_arr[i], location_arr[0] = location_arr[0], location_arr[i] # swap
+		heapify(location_arr, i, 0)
+
+# Driver code to test above
+location_arr = [ 12, 11, 13, 5, 6, 7]
+heapSort(location_arr)
+n = len(location_arr)
+print ("Sorted array is")
+for i in range(n):
+	print ("%d" %location_arr[i]),
 
 # HEAPSORT
 # Reference: https://www.geeksforgeeks.org/python-program-for-heap-sort/
