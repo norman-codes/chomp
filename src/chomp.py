@@ -9,6 +9,9 @@ import json
 # distance between two latitude/longitude pairs.
 import math
 
+import os.path
+import codecs
+
 # DISTANCE CALCULATION:
 # The latitude and longitude coordinate pair of the University of Florida, extracted from Google Maps:
 # https://www.google.com/maps/place/University+of+Florida/@29.6436325,-82.3636849,15z/data=!4m8!1m2!3m1!2sUniversity+of+Florida!3m4!1s0x88e8a30cfbe49275:0x206fe0de143d9886!8m2!3d29.6436325!4d-82.3549302
@@ -49,9 +52,10 @@ class Location:
     numReviews = 1
     categories = []
     
+    # Distance to UF, assigned to a variable after being calculated once to optimize processing time.
+    distanceToUF = 1.0
 
-
-    # "Chompability" - the custom rating of a location based on:
+    # "Chompability" - the custom rating of a location. See constructor for calculation details.
     chompability = 0.0
 
     # "Constructor"
@@ -68,6 +72,9 @@ class Location:
         self.stars = _stars
         self.numReviews = _numReviews
         self.categories = _categories
+
+        # Calculating the distance to UF from the inputted coordinates.
+        self.distanceToUF = distance(_latitude, _longitude, UF_latitude, UF_longitude)
         
         # Calculating "Chompability":
         # chompability = (X / distance) + (numReviews / stars)
@@ -75,11 +82,26 @@ class Location:
         # if it is increased, then the user is okay with traveling a larger distance
         # and as a result, the chompability of restaurants that are further away from UF will increase.
 
-        self.chompability = (1 / distance(_latitude, _longitude, UF_latitude, UF_longitude)) + (_numReviews / _stars)
+        self.chompability = (1 / self.distanceToUF) + (_numReviews / _stars)
+
+    # "rechompify" recalculates the "Chompability" based on a new closeness factor.
+    def rechompify(self, closeness):
+        self.chompability = (closeness / self.distanceToUF) + (self.numReviews / self.stars)
 
 # READING THE .json FILE
 # (and creating Location objects with it, to be pushed into an array.)
 # Reference: https://www.geeksforgeeks.org/read-json-file-using-python/
+# Encoding issues were present, and the "codecs" library was necessary to open the .json file properly.
+# Reference for encoding issue fix: https://stackoverflow.com/questions/30598350/unicodedecodeerror-charmap-codec-cant-decode-byte-0x8d-in-position-7240-cha
+
+types_of_encoding = ["utf8", "cp1252"]
+for encoding_type in types_of_encoding:
+    file1 = codecs.open(os.path.dirname(__file__) + '\\dataset\\yelp_academic_dataset_business.json', encoding=encoding_type, errors='replace')
+    Lines = file1.readlines()
+
+    for line in Lines:
+        test = json.loads(line)
+
 
 # QUICKSORT
 # Reference: https://www.geeksforgeeks.org/python-program-for-quicksort/
