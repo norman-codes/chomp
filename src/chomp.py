@@ -200,10 +200,6 @@ def heapSort(location_arr):
 # Driver code to test above
 location_arr = [ 12, 11, 13, 5, 6, 7]
 heapSort(location_arr)
-n = len(location_arr)
-print ("Sorted array is")
-for i in range(n):
-	print ("%d" %location_arr[i]),
 
 # HEAPSORT
 # Reference: https://www.geeksforgeeks.org/python-program-for-heap-sort/
