@@ -86,8 +86,8 @@ class Location:
         # and as a result, the chompability of restaurants that are further away from UF will increase.
 
         self.chompability = round((((100 / 1) * (1000 / self.distanceToUF)) + (self.numFactor / (100 - 1))), 4)
-    # "rechompify" recalculates the "Chompability" based on a new closeness factor.
-    def rechompify(self, closenessFactor):
+    # "chompify" calculates the "Chompability" based on a closeness factor.
+    def chompify(self, closenessFactor):
         if (closenessFactor == 100):
             self.chompability = round(self.numFactor, 4)
         else:
