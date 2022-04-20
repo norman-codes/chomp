@@ -15,6 +15,10 @@ import os.path
 # here, it allows us to track the time at which a function starts and ends to compare and display the execution speeds of each sorting algorithm.
 import time
 
+import sys
+print(sys.getrecursionlimit())
+sys.setrecursionlimit(2000)
+
 # DISTANCE CALCULATION:
 # The latitude and longitude coordinate pair of the University of Florida, extracted from Google Maps:
 # https://www.google.com/maps/place/University+of+Florida/@29.6436325,-82.3636849,15z/data=!4m8!1m2!3m1!2sUniversity+of+Florida!3m4!1s0x88e8a30cfbe49275:0x206fe0de143d9886!8m2!3d29.6436325!4d-82.3549302
@@ -84,13 +88,13 @@ class Location:
         # if it is increased, then the user is okay with traveling a larger distance
         # and as a result, the chompability of restaurants that are further away from UF will increase.
 
-        self.chompability = round((((100 / 1) * (1000 / self.distanceToUF)) + (self.numFactor / (100 - 1))), 4)
+        self.chompability = ((100 / 1) * (1000 / self.distanceToUF)) + (self.numFactor / (100 - 1))
     # "chompify" calculates the "Chompability" based on a closeness factor.
     def chompify(self, closenessFactor):
         if (closenessFactor == 100):
-            self.chompability = round(self.numFactor, 4)
+            self.chompability = self.numFactor
         else:
-            self.chompability = round((((100 / closenessFactor) * (1000 / self.distanceToUF)) + (self.numFactor / (100 - closenessFactor))), 4)
+            self.chompability = ((100 / closenessFactor) * (1000 / self.distanceToUF)) + (self.numFactor / (100 - closenessFactor))
 
 # Initializing the array of Location objects. This array will be sorted based on the "Chompability" of each location.
 locations = []
@@ -231,7 +235,6 @@ def heapSort(locationArray):
         heapify(locationArray, j, 0)
 
 # GUI CODE
-
 # Reference: http://appjar.info/
 app = gui("Chomp", "850x500", showIcon=False)
 
@@ -287,37 +290,130 @@ app.addScale("ClosenessInput", row=1, column=6)
 app.setScaleRange("ClosenessInput", 1, 100, curr=1)
 app.showScaleValue("ClosenessInput", show=True)
 
+def rechompify(newCloseness, algorithmType):
+    # Recalculate chompability based on new closeness factor.
+    for location in locations:
+        location.chompify(newCloseness)
+    
+    # Sort the entire location array.
+    if algorithmType == "Quick Sort":
+        quickSort(locations, 0, len(locations) - 1)
+    elif algorithmType == "Heap Sort":
+        heapSort(locations)
+
+# def updateDisplay(state, categories, city, direction, numRows):
+#     app.openScrollPane("TOP")
+
+#     # The locations array is sorted such that locations[0] has the LOWEST chompability and locations[len(locations) - 1] has the HIGHEST chompability.
+#     # Print the next element corresponding to the given sorting inputs, numRows times.
+
+#     app.addLabel("locationPosition", "#\t", row=0, column=0).config(font="Helvetica 12 underline")
+#     app.addLabel("locationScore", "\"Chompability\"\t\t", row=0, column=1).config(font="Helvetica 12 underline")
+#     app.addLabel("locationName", "Name\t\t", row=0, column=2).config(font="Helvetica 12 underline")
+#     app.addLabel("locationAddress", "Address\t\t", row=0, column=3).config(font="Helvetica 12 underline")
+#     app.addLabel("locationCity", "City\t\t", row=0, column=4).config(font="Helvetica 12 underline")
+#     app.addLabel("locationState", "State\t\t", row=0, column=5).config(font="Helvetica 12 underline")
+#     app.addLabel("locationDistance", "Distance to UF\t\t", row=0, column=6).config(font="Helvetica 12 underline")
+#     app.addLabel("locationStars", "Stars\t\t", row=0, column=7).config(font="Helvetica 12 underline")
+#     app.addLabel("locationReviews", "Reviews\t\t", row=0, column=8).config(font="Helvetica 12 underline")
+#     app.addLabel("locationCategories", "Categories", row=0, column=9).config(font="Helvetica 12 underline")
+
+#     app.stopScrollPane()
+
 def chomp(btn):
+    # SORTING ALGORITHM
     selected_algorithm = app.getOptionBox("AlgorithmInput")
     print(selected_algorithm)
 
+    # CLOSENESS
+    newClosenessFactor = app.getScale("ClosenessInput")
+    print(newClosenessFactor)
+
+    # If the closeness factor changes, then the chompability of each location changes.
+    # It must be recalculated and the lists must be sorted.
+    rechompify(newClosenessFactor, selected_algorithm)
+    print("chompified!")
+
+    # CATEGORY
     selected_categories = app.getEntry("CategoryInput").split(", ")
     for category in selected_categories:
-        # If the category does not exist in the set, pop up an error message and do not proceed.
-        if category not in categories:
-            app.errorBox("noCategoryError", "This category does not exist!")
-            return
-        elif category == '' or category == "None":
-            print(category)
+        if category == '' or category == "None":
+            print("No categories selected.")
             # If the category is equal to '' or "None"
-            # then proceed to NOT SORT BY CATEGORY.
-
-
-        # if it does, continue.
-        # if not, error pop-up.
+            # then proceed to INCLUDE ALL CATEGORIES.
+        elif category not in categories:
+            # If the category does not exist in the set, pop up an error message and do not proceed.
+            app.errorBox("Error: Category not found.", "This category does not exist in our dataset.")
+            return
     
+    # STATE
     selected_state = app.getOptionBox("StateInput")
     print(selected_state)
     
+    # CITY
     selected_city = app.getEntry("CityInput")
-    print(selected_city)
-
+    # Check if the inputted city exists in the database. If it doesn't pop up an error message and do not proceed.
+    if selected_city == '' or selected_city == "None":
+        print("No city selected.")
+        # If the city is equal to '' or "None"
+        # then proceed to INCLUDE ALL CITIES.
+    elif selected_city not in cities:
+        app.errorBox("Error: City not found.", "This city does not exist in our dataset.")
+        return
+    
+    # ORDER
     selected_order = app.getOptionBox("OrderInput")
-    print(selected_order)
-    # if custom, then pop up with entry.
+    orderDirection = ""
+    numRows = 0
+    if selected_order == "Custom":
+        # Prompting the user to input a custom order entry delimited by a space.
+        # The first word is "Top" or "Bottom" and the second word is an integer for the number of locations they want (== numRows).
+        customString = app.textBox("Input Custom Order", "Please input your custom order in two words separated by a space: (1) Top/Bottom and an (2) integer between 1 and 150,346 (our dataset size!)")
+        customOrderList = customString.split(" ")
+        # Setting the order direction (top/bottom).
+        orderDirection = customOrderList[0]
+        if orderDirection != "Top" and orderDirection != "Bottom":
+            app.errorBox("Error: Invalid order direction.", orderDirection + " is not a valid direction. Please enter either \"Top\" or \"Bottom\".")
+            return
 
-    closenessFactor = app.getScale("ClosenessInput")
-    print(closenessFactor)
+        # Setting the number of rows.
+        # Converting string to integer: https://www.geeksforgeeks.org/convert-string-to-integer-in-python/
+        numRows = int(customOrderList[1])
+        if numRows < 1 or numRows > 150346:
+            app.errorBox("Error: Invalid row number.", "Please enter an integer between 1 and 150,346 as the number of rows you would like to see.")
+            return
+    elif selected_order == "Top 10":
+        orderDirection = "Top"
+        numRows = 10
+    elif selected_order == "Top 25":
+        orderDirection = "Top"
+        numRows = 25
+    elif selected_order == "Top 50":
+        orderDirection = "Top"
+        numRows = 50
+    elif selected_order == "Top 100":
+        orderDirection = "Top"
+        numRows = 100
+    elif selected_order == "Bottom 10":
+        orderDirection = "Bottom"
+        numRows = 10
+    elif selected_order == "Bottom 25":
+        orderDirection = "Bottom"
+        numRows = 25
+    elif selected_order == "Bottom 50":
+        orderDirection = "Bottom"
+        numRows = 50
+    elif selected_order == "Bottom 100":
+        orderDirection = "Bottom"
+        numRows = 100
+    print(orderDirection)
+    print(numRows)
+    
+
+    # UPDATING THE DISPLAY
+    # To update the display, each user input is passed into a function,
+    # and values are printed in the Scroll Pane accordingly.
+    # updateDisplay(selected_state, selected_categories, selected_city, orderDirection, numRows)
 
 app.addButton("Chomp!", chomp, row=0, column=0, rowspan=2).config(font="Castellar 14")
 
