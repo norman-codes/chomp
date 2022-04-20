@@ -78,17 +78,20 @@ class Location:
 
         # Calculating the distance to UF from the inputted coordinates.
         self.distanceToUF = distance(_latitude, _longitude, UF_latitude, UF_longitude)
-        
+        self.numFactor = (_numReviews / (5.0 / _stars))
         # Calculating "Chompability":
         # chompability = (X / distance) + (numReviews / stars)
         # where X is a *USER-INPUTTED* "closeness factor" (default is 1);
         # if it is increased, then the user is okay with traveling a larger distance
         # and as a result, the chompability of restaurants that are further away from UF will increase.
-        self.chompability = (1 / self.distanceToUF) + (_numReviews / _stars)
 
+        self.chompability = round((((100 / 1) * (1000 / self.distanceToUF)) + (self.numFactor / (100 - 1))), 4)
     # "rechompify" recalculates the "Chompability" based on a new closeness factor.
-    def rechompify(self, closeness):
-        self.chompability = (self.distanceToUF / closeness) + (self.numReviews / self.stars)
+    def rechompify(self, closenessFactor):
+        if (closenessFactor == 100):
+            self.chompability = round(self.numFactor, 4)
+        else:
+            self.chompability = round((((100 / closenessFactor) * (1000 / self.distanceToUF)) + (self.numFactor / (100 - closenessFactor))), 4)
 
 # Initializing the array of Location objects. This array will be sorted based on the "Chompability" of each location.
 locations = []
