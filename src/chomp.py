@@ -1,7 +1,6 @@
 # The open-source "appJar" framework (found in the official Python documentation here: https://wiki.python.org/moin/GuiProgramming)
 # is used to generate a GUI simply and easily using Python's native interface toolkit ("TkInter" - https://wiki.python.org/moin/TkInter).
 # "appJar"'s complete documentation, referenced throughout the project, is available here: http://appjar.info/
-from array import array
 from appJar import gui
 # Python has a native library for reading files with the ".json" extension. (https://docs.python.org/3/library/json.html)
 # The dataset used for this project is held within a ".json" file, so it is imported here.
