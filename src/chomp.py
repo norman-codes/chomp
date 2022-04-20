@@ -94,6 +94,15 @@ class Location:
 
 # Initializing the array of Location objects. This array will be sorted based on the "Chompability" of each location.
 locations = []
+# Initializing sets of Categories, States, and Cities. These sets will be populated as the .json file is read (why sets? no duplicates!).
+# The array will be populated from the sets and will be used for dropdown menus & checking input validity in the GUI.
+# Sets can be typecast into lists (arrays), which will be done for the dropdown menus & for checking input validity in the GUI.
+# Reference: https://www.geeksforgeeks.org/python-convert-set-into-a-list/
+
+# Note that the number of categories is very large (1300+): https://blog.yelp.com/businesses/yelp_category_list/
+categories = set()
+states = set()
+cities = set()
 
 # READING THE .json FILE (and creating Location objects with it, to be pushed into an array).
 # Reference: https://www.geeksforgeeks.org/read-json-file-using-python/
@@ -108,6 +117,11 @@ lines = datasetFile.readlines()
 for line in lines:
     # The JSON object in the current line is parsed.
     locationJSON = json.loads(line)
+
+    # Adding the state and city of the current location into their respective sets.
+    states.add(locationJSON["state"])
+    cities.add(locationJSON["city"])
+
     # Every relevant variable from the JSON may now be used to instantiate a "Location" object.
     if locationJSON["categories"] != None:
         # Note that the "categories" of a given location are injected into a comma-separated string.
@@ -115,10 +129,17 @@ for line in lines:
         # Reference: https://www.codespeedy.com/how-to-convert-comma-separated-string-to-list-in-python/
         # If at least one category exists for a given location, then split it into a list and create the object with it.
         category_list = locationJSON["categories"].split(", ")
+
+        # Adding each category in the list of categories of this location into the Categories set.
+        for category in category_list:
+            categories.add(category)
+        
         currentLocation = Location(locationJSON["business_id"], locationJSON["name"], locationJSON["address"], locationJSON["city"], locationJSON["state"], locationJSON["latitude"], locationJSON["longitude"], locationJSON["stars"], locationJSON["review_count"], category_list)
     else:
-        # If no categories exist for a given location, then push "none" into the category list and create he object with it.
-        currentLocation = Location(locationJSON["business_id"], locationJSON["name"], locationJSON["address"], locationJSON["city"], locationJSON["state"], locationJSON["latitude"], locationJSON["longitude"], locationJSON["stars"], locationJSON["review_count"], "none")
+        # If no categories exist for a given location, then push "none" into the category list and create the object with it.
+        currentLocation = Location(locationJSON["business_id"], locationJSON["name"], locationJSON["address"], locationJSON["city"], locationJSON["state"], locationJSON["latitude"], locationJSON["longitude"], locationJSON["stars"], locationJSON["review_count"], "None")
+        # Adding "None" to the list of categories if the user wishes to not specify no particular category while searching.
+        categories.add("None")
     
     # The "locations" array is appended with the current location object.
     locations.append(currentLocation)
@@ -210,8 +231,73 @@ def heapSort(locationArray):
         heapify(locationArray, j, 0)
 
 # GUI CODE
+
 # Reference: http://appjar.info/
-app = gui("Chomp", "1280x720")
-app.addLabel("title", "Welcome to appjar")
-app.setLabelBg("title", "red")
+app = gui("Chomp", "700x500", showIcon=False)
+
+# Crocodile icon from flaticon.com.
+app.setIcon((os.path.dirname(__file__) + '\\images\\crocodile.gif'))
+
+# TOP FRAME
+app.setStretch("both")
+app.setSticky("news")
+app.startScrollPane("TOP")
+for x in range(10):
+    for y in range(25):
+            name = str(x) + "-" + str(y)
+            app.addLabel(name, name, row=x, column=y)
+            app.setLabelBg(name, app.RANDOM_COLOUR())
+app.stopScrollPane()
+
+# BOTTOM FRAME
+app.setStretch("column")
+app.setSticky("esw")
+app.startFrame("BOT")
+
+#app.addOptionBox("AlgorithmInput", ["Quick Sort", "Heap Sort"])
+
+app.addLabel("CategoryLabel", "Category", row=0, column=1)
+app.addEntry("CategoryInput", row=1, column=1)
+
+# Converting the states set into a list.
+states_list = list(states)
+# Using Python's built-in sorting algorithm to put the list in lexicographical order.
+# https://blog.finxter.com/python-list-sort/
+states_list.sort()
+# Inserting "Any" at the beginning.
+states_list.insert(0, "Any")
+app.addLabel("StateLabel", "State", row=0, column=2)
+app.addOptionBox("StateInput", states_list, row=1, column=2)
+
+app.addLabel("CityLabel", "City", row=0, column=3)
+app.addEntry("CityInput", row=1, column=3)
+
+app.addLabel("OrderLabel", "Order", row=0, column=4)
+app.addOptionBox("OrderInput", ["Top 10", "Top 25", "Top 50", "Bottom 10", "Bottom 25", "Bottom 50", "Custom"], row=1, column=4)
+
+app.addLabel("ClosenessLabel", "Closeness", row=0, column=5)
+app.addScale("ClosenessInput", row=1, column=5)
+app.setScaleRange("ClosenessInput", 1, 100, curr=1)
+app.showScaleValue("ClosenessInput", show=True)
+
+def chomp(btn):
+    closenessFactor = app.getScale("ClosenessInput")
+    print(closenessFactor)
+    
+    selected_categories = app.getEntry("CategoryInput").split(", ")
+    for category in selected_categories:
+        print(category)
+        # check if the category exists in the set
+    
+    selected_state = app.getOptionBox("StateInput")
+    print(selected_state)
+    
+
+    selected_city = app.getEntry("CityInput")
+    print(selected_city)
+
+app.addButton("Chomp", chomp, row=0, column=0, rowspan=2)
+
+app.stopFrame()
 app.go()
+
