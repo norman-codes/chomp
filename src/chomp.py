@@ -233,7 +233,7 @@ def heapSort(locationArray):
 # GUI CODE
 
 # Reference: http://appjar.info/
-app = gui("Chomp", "700x500", showIcon=False)
+app = gui("Chomp", "850x500", showIcon=False)
 
 # Crocodile icon from flaticon.com.
 app.setIcon((os.path.dirname(__file__) + '\\images\\crocodile.gif'))
@@ -242,11 +242,17 @@ app.setIcon((os.path.dirname(__file__) + '\\images\\crocodile.gif'))
 app.setStretch("both")
 app.setSticky("news")
 app.startScrollPane("TOP")
-for x in range(10):
-    for y in range(25):
-            name = str(x) + "-" + str(y)
-            app.addLabel(name, name, row=x, column=y)
-            app.setLabelBg(name, app.RANDOM_COLOUR())
+
+app.addLabel("locationPosition", "#\t", row=0, column=0).config(font="Helvetica 12 underline")
+app.addLabel("locationScore", "\"Chompability\"\t\t", row=0, column=1).config(font="Helvetica 12 underline")
+app.addLabel("locationName", "Name\t\t", row=0, column=2).config(font="Helvetica 12 underline")
+app.addLabel("locationAddress", "Address\t\t", row=0, column=3).config(font="Helvetica 12 underline")
+app.addLabel("locationCity", "City\t\t", row=0, column=4).config(font="Helvetica 12 underline")
+app.addLabel("locationState", "State\t\t", row=0, column=5).config(font="Helvetica 12 underline")
+app.addLabel("locationDistance", "Distance to UF\t\t", row=0, column=6).config(font="Helvetica 12 underline")
+app.addLabel("locationStars", "Stars\t\t", row=0, column=7).config(font="Helvetica 12 underline")
+app.addLabel("locationReviews", "Reviews\t\t", row=0, column=8).config(font="Helvetica 12 underline")
+app.addLabel("locationCategories", "Categories", row=0, column=9).config(font="Helvetica 12 underline")
 app.stopScrollPane()
 
 # BOTTOM FRAME
@@ -254,10 +260,11 @@ app.setStretch("column")
 app.setSticky("esw")
 app.startFrame("BOT")
 
-#app.addOptionBox("AlgorithmInput", ["Quick Sort", "Heap Sort"])
+app.addLabel("AlgorithmLabel", "Sort Type", row=0, column=1).config(font="Helvetica 12 underline")
+app.addOptionBox("AlgorithmInput", ["Quick Sort", "Heap Sort"], row=1, column=1)
 
-app.addLabel("CategoryLabel", "Category", row=0, column=1)
-app.addEntry("CategoryInput", row=1, column=1)
+app.addLabel("CategoryLabel", "Category", row=0, column=2).config(font="Helvetica 12 underline")
+app.addEntry("CategoryInput", row=1, column=2)
 
 # Converting the states set into a list.
 states_list = list(states)
@@ -266,37 +273,53 @@ states_list = list(states)
 states_list.sort()
 # Inserting "Any" at the beginning.
 states_list.insert(0, "Any")
-app.addLabel("StateLabel", "State", row=0, column=2)
-app.addOptionBox("StateInput", states_list, row=1, column=2)
+app.addLabel("StateLabel", "State", row=0, column=3).config(font="Helvetica 12 underline")
+app.addOptionBox("StateInput", states_list, row=1, column=3)
 
-app.addLabel("CityLabel", "City", row=0, column=3)
-app.addEntry("CityInput", row=1, column=3)
+app.addLabel("CityLabel", "City", row=0, column=4).config(font="Helvetica 12 underline")
+app.addEntry("CityInput", row=1, column=4)
 
-app.addLabel("OrderLabel", "Order", row=0, column=4)
-app.addOptionBox("OrderInput", ["Top 10", "Top 25", "Top 50", "Bottom 10", "Bottom 25", "Bottom 50", "Custom"], row=1, column=4)
+app.addLabel("OrderLabel", "Order", row=0, column=5).config(font="Helvetica 12 underline")
+app.addOptionBox("OrderInput", ["Top 10", "Top 25", "Top 50", "Top 100", "Bottom 10", "Bottom 25", "Bottom 50", "Bottom 100", "Custom"], row=1, column=5)
 
-app.addLabel("ClosenessLabel", "Closeness", row=0, column=5)
-app.addScale("ClosenessInput", row=1, column=5)
+app.addLabel("ClosenessLabel", "Closeness", row=0, column=6).config(font="Helvetica 12 underline")
+app.addScale("ClosenessInput", row=1, column=6)
 app.setScaleRange("ClosenessInput", 1, 100, curr=1)
 app.showScaleValue("ClosenessInput", show=True)
 
 def chomp(btn):
-    closenessFactor = app.getScale("ClosenessInput")
-    print(closenessFactor)
-    
+    selected_algorithm = app.getOptionBox("AlgorithmInput")
+    print(selected_algorithm)
+
     selected_categories = app.getEntry("CategoryInput").split(", ")
     for category in selected_categories:
-        print(category)
-        # check if the category exists in the set
+        # If the category does not exist in the set, pop up an error message and do not proceed.
+        if category not in categories:
+            app.errorBox("noCategoryError", "This category does not exist!")
+            return
+        elif category == '' or category == "None":
+            print(category)
+            # If the category is equal to '' or "None"
+            # then proceed to NOT SORT BY CATEGORY.
+
+
+        # if it does, continue.
+        # if not, error pop-up.
     
     selected_state = app.getOptionBox("StateInput")
     print(selected_state)
     
-
     selected_city = app.getEntry("CityInput")
     print(selected_city)
 
-app.addButton("Chomp", chomp, row=0, column=0, rowspan=2)
+    selected_order = app.getOptionBox("OrderInput")
+    print(selected_order)
+    # if custom, then pop up with entry.
+
+    closenessFactor = app.getScale("ClosenessInput")
+    print(closenessFactor)
+
+app.addButton("Chomp!", chomp, row=0, column=0, rowspan=2).config(font="Castellar 14")
 
 app.stopFrame()
 app.go()
