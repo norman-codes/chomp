@@ -11,10 +11,7 @@ import math
 # Python has a native library for operating system-related functionality (https://docs.python.org/3/library/os.html);
 # here, it aids in finding the database file by allowing the script to specify the path to it relative to the user's file system.
 import os.path
-# Python has a native library for time acccess and conversions (https://docs.python.org/3/library/time.html);
-# here, it allows us to track the time at which a function starts and ends to compare and display the execution speeds of each sorting algorithm.
-import time
-
+# System was imported because the recursion limit was reached when using QuickSort.
 import sys
 print(sys.getrecursionlimit())
 sys.setrecursionlimit(2000)
@@ -241,21 +238,24 @@ app = gui("Chomp", "850x500", showIcon=False)
 # Crocodile icon from flaticon.com.
 app.setIcon((os.path.dirname(__file__) + '\\images\\crocodile.gif'))
 
+def populateTOPFrame():
+    app.addLabel("locationPosition", "#\t", row=0, column=0).config(font="Helvetica 12 underline")
+    app.addLabel("locationScore", "\"Chompability\"\t\t", row=0, column=1).config(font="Helvetica 12 underline")
+    app.addLabel("locationName", "Name\t\t", row=0, column=2).config(font="Helvetica 12 underline")
+    app.addLabel("locationAddress", "Address\t\t", row=0, column=3).config(font="Helvetica 12 underline")
+    app.addLabel("locationCity", "City\t\t", row=0, column=4).config(font="Helvetica 12 underline")
+    app.addLabel("locationState", "State\t\t", row=0, column=5).config(font="Helvetica 12 underline")
+    app.addLabel("locationDistance", "Distance to UF\t\t", row=0, column=6).config(font="Helvetica 12 underline")
+    app.addLabel("locationStars", "Stars\t\t", row=0, column=7).config(font="Helvetica 12 underline")
+    app.addLabel("locationReviews", "Reviews\t\t", row=0, column=8).config(font="Helvetica 12 underline")
+    app.addLabel("locationCategories", "Categories", row=0, column=9).config(font="Helvetica 12 underline")
+
 # TOP FRAME
 app.setStretch("both")
 app.setSticky("news")
-app.startScrollPane("TOP")
 
-app.addLabel("locationPosition", "#\t", row=0, column=0).config(font="Helvetica 12 underline")
-app.addLabel("locationScore", "\"Chompability\"\t\t", row=0, column=1).config(font="Helvetica 12 underline")
-app.addLabel("locationName", "Name\t\t", row=0, column=2).config(font="Helvetica 12 underline")
-app.addLabel("locationAddress", "Address\t\t", row=0, column=3).config(font="Helvetica 12 underline")
-app.addLabel("locationCity", "City\t\t", row=0, column=4).config(font="Helvetica 12 underline")
-app.addLabel("locationState", "State\t\t", row=0, column=5).config(font="Helvetica 12 underline")
-app.addLabel("locationDistance", "Distance to UF\t\t", row=0, column=6).config(font="Helvetica 12 underline")
-app.addLabel("locationStars", "Stars\t\t", row=0, column=7).config(font="Helvetica 12 underline")
-app.addLabel("locationReviews", "Reviews\t\t", row=0, column=8).config(font="Helvetica 12 underline")
-app.addLabel("locationCategories", "Categories", row=0, column=9).config(font="Helvetica 12 underline")
+app.startScrollPane("TOP")
+populateTOPFrame()
 app.stopScrollPane()
 
 # BOTTOM FRAME
@@ -301,24 +301,77 @@ def rechompify(newCloseness, algorithmType):
     elif algorithmType == "Heap Sort":
         heapSort(locations)
 
-# def updateDisplay(state, categories, city, direction, numRows):
-#     app.openScrollPane("TOP")
 
-#     # The locations array is sorted such that locations[0] has the LOWEST chompability and locations[len(locations) - 1] has the HIGHEST chompability.
-#     # Print the next element corresponding to the given sorting inputs, numRows times.
+def updateDisplay(state, categories, city, direction, numRows):
+    app.openScrollPane("TOP")
 
-#     app.addLabel("locationPosition", "#\t", row=0, column=0).config(font="Helvetica 12 underline")
-#     app.addLabel("locationScore", "\"Chompability\"\t\t", row=0, column=1).config(font="Helvetica 12 underline")
-#     app.addLabel("locationName", "Name\t\t", row=0, column=2).config(font="Helvetica 12 underline")
-#     app.addLabel("locationAddress", "Address\t\t", row=0, column=3).config(font="Helvetica 12 underline")
-#     app.addLabel("locationCity", "City\t\t", row=0, column=4).config(font="Helvetica 12 underline")
-#     app.addLabel("locationState", "State\t\t", row=0, column=5).config(font="Helvetica 12 underline")
-#     app.addLabel("locationDistance", "Distance to UF\t\t", row=0, column=6).config(font="Helvetica 12 underline")
-#     app.addLabel("locationStars", "Stars\t\t", row=0, column=7).config(font="Helvetica 12 underline")
-#     app.addLabel("locationReviews", "Reviews\t\t", row=0, column=8).config(font="Helvetica 12 underline")
-#     app.addLabel("locationCategories", "Categories", row=0, column=9).config(font="Helvetica 12 underline")
+    app.emptyCurrentContainer()
+    
+    populateTOPFrame()
 
-#     app.stopScrollPane()
+    # The locations array is sorted such that locations[0] has the LOWEST chompability and locations[len(locations) - 1] has the HIGHEST chompability.
+    # Print the next element corresponding to the given sorting inputs, numRows times.
+    
+    locationsToPrint = []
+    # Isolating locations to print.
+
+    for location in locations:
+        # Checking matching categories.
+        for location_category in location.categories:
+            for input_category in categories:
+                if input_category != '' or input_category != "None":
+                    if location_category == input_category:
+                        locationsToPrint.append(location)
+
+        # Checking matching state.
+        if state != "Any":
+            if location.state == state:
+                locationsToPrint.append(location)
+
+        # Checking matching city.
+        if city != '' or city != "None":
+            if location.city == city:
+                locationsToPrint.append(location)
+
+    # Removing duplicates.
+    # Reference: https://stackoverflow.com/questions/1653970/does-python-have-an-ordered-set
+    list(dict.fromkeys(locationsToPrint))
+
+    # IF THE THING IS "BOTTOM", then INDEX FROM 0
+    # IF IT IS "TOP", THEN REVERSE
+    if len(locationsToPrint) != 0:
+        if direction == "Top":
+            locationsToPrint.reverse()
+        for i in range(numRows):
+            # label pos = i + 1
+            app.addLabel("locationPosition" + str(i + 1), str(i + 1) + "\t", row=i+1, column=0)
+            app.addLabel("locationScore" + str(i + 1), str(locationsToPrint[i].chompability) + "\t\t", row=i+1, column=1)
+            app.addLabel("locationName" + str(i + 1), locationsToPrint[i].name + "\t\t", row=i+1, column=2)
+            app.addLabel("locationAddress" + str(i + 1), locationsToPrint[i].address + "\t\t", row=i+1, column=3)
+            app.addLabel("locationCity" + str(i + 1), locationsToPrint[i].city + "\t\t", row=i+1, column=4)
+            app.addLabel("locationState" + str(i + 1), locationsToPrint[i].state + "\t\t", row=i+1, column=5)
+            app.addLabel("locationDistance" + str(i + 1), str(locationsToPrint[i].distanceToUF) + "\t\t", row=i+1, column=6)
+            app.addLabel("locationStars" + str(i + 1), str(locationsToPrint[i].stars) + "\t\t", row=i+1, column=7)
+            app.addLabel("locationReviews" + str(i + 1), str(locationsToPrint[i].numReviews) + "\t\t", row=i+1, column=8)
+            categoryString = ', '.join(locationsToPrint[i].categories) # https://elearning.wsldp.com/python3/how-to-convert-python-list-to-comma-separated-string/
+            app.addLabel("locationCategories" + str(i + 1), categoryString, row=i+1, column=9)
+    else:
+        if direction == "Top":
+            locations.reverse()
+        for i in range(numRows):
+            app.addLabel("locationPosition" + str(i + 1), str(i + 1) + "\t", row=i+1, column=0)
+            app.addLabel("locationScore" + str(i + 1), str(locations[i].chompability) + "\t\t", row=i+1, column=1)
+            app.addLabel("locationName" + str(i + 1), locations[i].name + "\t\t", row=i+1, column=2)
+            app.addLabel("locationAddress" + str(i + 1), locations[i].address + "\t\t", row=i+1, column=3)
+            app.addLabel("locationCity" + str(i + 1), locations[i].city + "\t\t", row=i+1, column=4)
+            app.addLabel("locationState" + str(i + 1), locations[i].state + "\t\t", row=i+1, column=5)
+            app.addLabel("locationDistance" + str(i + 1), str(locations[i].distanceToUF) + "\t\t", row=i+1, column=6)
+            app.addLabel("locationStars" + str(i + 1), str(locations[i].stars) + "\t\t", row=i+1, column=7)
+            app.addLabel("locationReviews" + str(i + 1), str(locations[i].numReviews) + "\t\t", row=i+1, column=8)
+            categoryString = ', '.join(locations[i].categories) # https://elearning.wsldp.com/python3/how-to-convert-python-list-to-comma-separated-string/
+            app.addLabel("locationCategories" + str(i + 1), categoryString, row=i+1, column=9)
+    app.stopScrollPane()
+
 
 def chomp(btn):
     # SORTING ALGORITHM
@@ -409,14 +462,13 @@ def chomp(btn):
     print(orderDirection)
     print(numRows)
     
-
     # UPDATING THE DISPLAY
     # To update the display, each user input is passed into a function,
     # and values are printed in the Scroll Pane accordingly.
-    # updateDisplay(selected_state, selected_categories, selected_city, orderDirection, numRows)
+    updateDisplay(selected_state, selected_categories, selected_city, orderDirection, numRows)
+    app.setScrollPaneWidth("TOP", 850)
+    app.setScrollPaneHeight("TOP", 430)
 
 app.addButton("Chomp!", chomp, row=0, column=0, rowspan=2).config(font="Castellar 14")
-
 app.stopFrame()
 app.go()
-
